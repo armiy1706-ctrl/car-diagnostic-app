@@ -3,123 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авто-Диагност</title>
+    <title>AutoMech AI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --tg-theme-bg-color: #ffffff;
-            --tg-theme-text-color: #000000;
-            --tg-theme-button-color: #2481cc;
-            --tg-theme-button-text-color: #ffffff;
-            --tg-theme-hint-color: #999999;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .card {
-            background: var(--tg-theme-bg-color);
-            border: 1px solid var(--tg-theme-hint-color);
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
-        h2 { margin-top: 0; font-size: 1.2rem; }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid var(--tg-theme-hint-color);
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            box-sizing: border-box;
-        }
-
-        button {
-            background-color: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .result {
-            display: none;
-            border-left: 4px solid #28a745;
-            background: #f8fff9;
-            padding: 15px;
-        }
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
+        .card { background: #2a2a2a; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
+        button { background: #0088cc; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
+        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; background: #333; color: white; border: none; }
     </style>
 </head>
 <body>
-
+    <h2>🚗 Диагностика</h2>
     <div class="card">
-        <h2>🚗 Мой автомобиль</h2>
-        <input type="text" id="carModel" placeholder="Напр: Toyota Camry 2015">
-    </div>
-
-    <div class="card">
-        <h2>🔍 Что случилось?</h2>
-        <textarea id="problem" rows="4" placeholder="Опишите звуки или поведение машины..."></textarea>
-    </div>
-
-    <button id="diagnoseBtn">Провести диагностику</button>
-
-    <div id="resultBox" class="card result">
-        <h3>📋 Предварительный диагноз:</h3>
-        <p id="diagnosisText"></p>
-        <small style="color: red;">* Данные сгенерированы ИИ. Проверьте узлы в СТО.</small>
+        <p>Выберите проблему:</p>
+        <select id="problem">
+            <option value="Стук в подвеске">Стук в подвеске</option>
+            <option value="Двигатель троит">Двигатель троит</option>
+            <option value="Горит Check Engine">Горит Check Engine</option>
+            <option value="Проблемы с тормозами">Проблемы с тормозами</option>
+        </select>
+        <input type="text" id="details" placeholder="Опишите детали (например, модель авто)">
+        <button onclick="sendData()">Отправить мастеру</button>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Разворачиваем приложение на весь экран
+        let tg = window.Telegram.WebApp;
+        tg.expand(); // Развернуть на весь экран
 
-        const btn = document.getElementById('diagnoseBtn');
-        const resBox = document.getElementById('resultBox');
-        const diagText = document.getElementById('diagnosisText');
+        function sendData() {
+            let problem = document.getElementById('problem').value;
+            let details = document.getElementById('details').value;
+            
+            let data = {
+                type: 'diagnosis',
+                text: `Проблема: ${problem}. Детали: ${details}`
+            };
 
-        btn.addEventListener('click', () => {
-            const car = document.getElementById('carModel').value;
-            const prob = document.getElementById('problem').value;
-
-            if (!car || !prob) {
-                tg.showAlert("Пожалуйста, заполните все поля!");
-                return;
-            }
-
-            btn.innerText = "Анализирую...";
-            btn.disabled = true;
-
-            // Имитация запроса к серверу с ИИ
-            setTimeout(() => {
-                btn.innerText = "Провести диагностику";
-                btn.disabled = false;
-                resBox.style.display = "block";
-                
-                // В реальном приложении этот текст придет из API
-                diagText.innerHTML = `Для <b>${car}</b> по описанию "${prob}" возможная причина: 
-                <br><br>1. Износ подшипника ступицы.
-                <br>2. Неравномерный износ колодок.
-                <br><br><b>Рекомендация:</b> Проверьте люфт колеса на домкрате.`;
-                
-                tg.HapticFeedback.notificationOccurred('success');
-            }, 2000);
-        });
+            tg.sendData(JSON.stringify(data)); // Отправляем данные боту
+            tg.close(); // Закрываем приложение
+        }
     </script>
 </body>
 </html>
