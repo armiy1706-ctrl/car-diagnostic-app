@@ -42,7 +42,20 @@ def get_ai_answer(text):
 
 # --- 3. ОБРАБОТКА ДАННЫХ ИЗ MINI APP ---
 @bot.message_handler(content_types=['web_app_data'])
+@bot.message_handler(content_types=['web_app_data'])
 def handle_web_app_data(message):
+    # ЭТА СТРОЧКА ПОЯВИТСЯ В КОНСОЛИ RENDER, ЕСЛИ ДАННЫЕ ПРИШЛИ
+    print("!!! КНОПКА НАЖАТА, ДАННЫЕ ПОЛУЧЕНЫ !!!") 
+    
+    try:
+        data = json.loads(message.web_app_data.data)
+        query_text = data.get('text', 'Ошибка данных')
+        bot.send_message(message.chat.id, f"Принято: {query_text}")
+        
+        answer = get_ai_answer(query_text)
+        bot.send_message(message.chat.id, answer)
+    except Exception as e:
+        print(f"ОШИБКА: {e}")
     # Получаем данные, которые мы отправили через tg.sendData в index.html
     raw_data = message.web_app_data.data
     data = json.loads(raw_data)
