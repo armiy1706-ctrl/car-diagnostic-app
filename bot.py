@@ -5,7 +5,7 @@ from threading import Thread
 from telebot import types
 
 # --- ТВОИ ТОКЕНЫ (Проверь их!) ---
-BOT_TOKEN = 'AAEe4mmkbc0vTxLp3St8yYkLHm8TyuJrD5M'
+BOT_TOKEN = '8572493279:AAEe4mmkbc0vTxLp3St8yYkLHm8TyuJrD5M'
 HF_TOKEN = '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'
 WEB_APP_URL = 'https://твой-логин.github.io/automech-ai/' 
 
