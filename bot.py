@@ -4,9 +4,19 @@ import requests
 from threading import Thread
 from flask import Flask
 
-# Теперь бот берет токены из настроек Render, а не из текста кода
+
+# Собираем токены из системы
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 HF_TOKEN = os.environ.get('HF_TOKEN')
+
+# САМАЯ ВАЖНАЯ ПРОВЕРКА
+if not HF_TOKEN:
+    print("❌ ОШИБКА: Переменная HF_TOKEN пустая! Проверь настройки в Render -> Environment")
+else:
+    print(f"✅ HF_TOKEN успешно загружен (начинается на {HF_TOKEN[:5]}...)")
+
+if not BOT_TOKEN:
+    print("❌ ОШИБКА: BOT_TOKEN не найден!")
 # Ссылку на Mini App можно оставить текстом, это не секрет
 WEB_APP_URL = "https://armiy1706-ctrl.github.io/car-diagnostic-app/"
 
