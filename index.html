@@ -3,40 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; }
-    </style>
 </head>
-<body>
-    <h3>Диагностика ИИ</h3>
-    <input type="text" id="desc" placeholder="Что случилось?" style="width: 90%; padding: 10px; margin-bottom: 10px;">
-    <button id="mainButton" onclick="sendData()">ОТПРАВИТЬ МАСТЕРУ</button>
+<body style="background: #1a1a1a; color: white; text-align: center; padding-top: 50px;">
+    <h2>Проверка связи</h2>
+    <button id="testBtn" style="padding: 20px; background: #0088cc; color: white; border-radius: 10px;">
+        НАЖМИ МЕНЯ (ОТПРАВИТЬ ТЕСТ)
+    </button>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        function sendData() {
-            const btn = document.getElementById('mainButton');
-            const info = document.getElementById('desc').value;
-
-            try {
-                btn.innerText = "ОТПРАВЛЯЮ...";
-                btn.style.background = "orange";
-
-                let data = JSON.stringify({ text: info });
-                
-                // ГЛАВНАЯ КОМАНДА
-                tg.sendData(data); 
-                
-                btn.innerText = "ГОТОВО!";
-                // Не закрываем сразу, чтобы увидеть успех
-                setTimeout(() => { tg.close(); }, 500); 
-            } catch (e) {
-                alert("Ошибка: " + e.message);
-            }
-        }
+        document.getElementById('testBtn').onclick = function() {
+            // Отправляем простое сообщение боту
+            tg.sendData("ТЕСТОВЫЙ ЗАПРОС");
+            // Кнопка должна поменять цвет, если сработала
+            this.style.background = "green";
+            this.innerText = "ОТПРАВЛЕНО!";
+            setTimeout(() => { tg.close(); }, 700);
+        };
     </script>
 </body>
 </html>
