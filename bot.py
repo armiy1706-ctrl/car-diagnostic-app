@@ -1,15 +1,14 @@
+import os
 import telebot
 import requests
-import os
 from threading import Thread
-from telebot import types
+from flask import Flask
 
-# --- НАСТРОЙКИ ---
-import os
+# Теперь бот берет токены из настроек Render, а не из текста кода
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 HF_TOKEN = os.environ.get('HF_TOKEN')
-# Добавь ?v=1 в конце для сброса кэша
-WEB_APP_URL = 'https://armiy1706-ctrl.github.io/car-diagnostic-app/'
+# Ссылку на Mini App можно оставить текстом, это не секрет
+WEB_APP_URL = "https://ТВОЙ_ЛОГИН.github.io/automech-ai/" 
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
