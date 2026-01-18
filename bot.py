@@ -8,7 +8,7 @@ from flask import Flask
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 HF_TOKEN = os.environ.get('HF_TOKEN')
 # Ссылку на Mini App можно оставить текстом, это не секрет
-WEB_APP_URL = "https://ТВОЙ_ЛОГИН.github.io/automech-ai/" 
+WEB_APP_URL = "https://armiy1706-ctrl.github.io/car-diagnostic-app/"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
