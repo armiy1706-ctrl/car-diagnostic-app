@@ -1,46 +1,41 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoMech AI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        .card { background: #2a2a2a; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #333; }
-        button { background: #0088cc; color: white; border: none; padding: 15px 30px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; }
-        select, input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; background: #333; color: white; border: none; }
+        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; }
     </style>
 </head>
 <body>
-    <h2>🚗 Диагностика</h2>
-    <div class="card">
-        <p>Выберите проблему:</p>
-        <select id="problem">
-            <option value="Стук в подвеске">Стук в подвеске</option>
-            <option value="Двигатель троит">Двигатель троит</option>
-            <option value="Горит Check Engine">Горит Check Engine</option>
-            <option value="Проблемы с тормозами">Проблемы с тормозами</option>
-        </select>
-        <input type="text" id="details" placeholder="Опишите детали (например, модель авто)">
-        <button onclick="sendData()">Отправить мастеру</button>
-    </div>
+    <h3>Диагностика ИИ</h3>
+    <input type="text" id="desc" placeholder="Что случилось?" style="width: 90%; padding: 10px; margin-bottom: 10px;">
+    <button id="mainButton" onclick="sendData()">ОТПРАВИТЬ МАСТЕРУ</button>
 
     <script>
         let tg = window.Telegram.WebApp;
-        tg.expand(); // Развернуть на весь экран
+        tg.expand();
 
         function sendData() {
-            let problem = document.getElementById('problem').value;
-            let details = document.getElementById('details').value;
-            
-            let data = {
-                type: 'diagnosis',
-                text: `Проблема: ${problem}. Детали: ${details}`
-            };
+            const btn = document.getElementById('mainButton');
+            const info = document.getElementById('desc').value;
 
-            tg.sendData(JSON.stringify(data)); // Отправляем данные боту
-            tg.close(); // Закрываем приложение
+            try {
+                btn.innerText = "ОТПРАВЛЯЮ...";
+                btn.style.background = "orange";
+
+                let data = JSON.stringify({ text: info });
+                
+                // ГЛАВНАЯ КОМАНДА
+                tg.sendData(data); 
+                
+                btn.innerText = "ГОТОВО!";
+                // Не закрываем сразу, чтобы увидеть успех
+                setTimeout(() => { tg.close(); }, 500); 
+            } catch (e) {
+                alert("Ошибка: " + e.message);
+            }
         }
     </script>
 </body>
