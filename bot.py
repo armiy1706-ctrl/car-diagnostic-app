@@ -32,21 +32,31 @@ def start(message):
 
 @bot.message_handler(content_types=['web_app_data'])
 def web_app(message):
-    # Бот получает текст из Mini App
     user_text = message.web_app_data.data
-    msg = bot.send_message(message.chat.id, f"🔍 Анализирую проблему: {user_text}...")
+    msg = bot.send_message(message.chat.id, f"🔍 Анализирую: {user_text}...")
     
-    # Запрос к нейросети
     api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    prompt = f"<|system|>Ты автомеханик. Отвечай кратко на русском.</s><|user|>{user_text}</s><|assistant|>"
     
     try:
-        response = requests.post(api_url, headers=headers, json={"inputs": prompt})
-        result = response.json()[0]['generated_text']
+        response = requests.post(api_url, headers=headers, json={"inputs": user_text}, timeout=15)
+        response_data = response.json()
+        
+        # Печатаем ответ в логи Render для проверки
+        print(f"Ответ от ИИ: {response_data}")
+        
+        if isinstance(response_data, list) and 'generated_text' in response_data[0]:
+            result = response_data[0]['generated_text']
+        elif 'error' in response_data:
+            result = f"Ошибка ИИ: {response_data['error']}"
+        else:
+            result = "ИИ прислал странный ответ. Попробуй еще раз."
+            
         bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=result)
-    except:
-        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Ошибка ИИ. Попробуй позже.")
+        
+    except Exception as e:
+        print(f"Ошибка запроса: {e}")
+        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Сбой связи с ИИ.")
 
 if __name__ == "__main__":
     # Сначала запускаем сервер для Render
