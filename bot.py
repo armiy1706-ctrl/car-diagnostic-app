@@ -8,7 +8,7 @@ from telebot import types
 BOT_TOKEN = ‘8572493279:AAEe4mmkbc0vTxLp3St8yYkLHm8TyuJrD5M’
 HF_TOKEN = ‘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’
 # Добавь ?v=1 в конце для сброса кэша
-WEB_APP_URL = ‘https://armiy1706-ctrl.github.io/car-diagnostic-app/?v=1’
+WEB_APP_URL = ‘https://armiy1706-ctrl.github.io/car-diagnostic-app/'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
