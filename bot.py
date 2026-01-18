@@ -49,6 +49,10 @@ def web_app(message):
         bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Ошибка ИИ. Попробуй позже.")
 
 if __name__ == "__main__":
+    # Сначала запускаем сервер для Render
     Thread(target=run_dummy_server, daemon=True).start()
-    print("Бот запущен...")
-    bot.polling(none_stop=True)
+    print("Бот запущен и готов к работе...")
+    
+    # Запускаем бота с удалением старых запросов
+    bot.remove_webhook() 
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
