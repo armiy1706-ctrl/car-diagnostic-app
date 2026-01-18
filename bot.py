@@ -56,7 +56,13 @@ if __name__ == "__main__":
     # Запускаем бота с удалением старых запросов
     bot.remove_webhook() 
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
-    @bot.message_handler(func=lambda message: True)
-    def echo_all(message):
+@bot.message_handler(func=lambda message: True)
+def echo_all(message):
     print(f"Получено сообщение: {message.text}")
     bot.reply_to(message, f"Ты написал: {message.text}")
+
+if __name__ == "__main__":
+    Thread(target=run_dummy_server, daemon=True).start()
+    print("Бот запущен и готов к работе...")
+    bot.remove_webhook() 
+    bot.infinity_polling(timeout=10, long_polling_timeout=5)
