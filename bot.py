@@ -33,34 +33,38 @@ def start(message):
 @bot.message_handler(content_types=['web_app_data'])
 def web_app(message):
     user_text = message.web_app_data.data
-    msg = bot.send_message(message.chat.id, f"🔍 Анализирую: {user_text}...")
+    msg = bot.send_message(message.chat.id, "🚗 Мастер изучает проблему...")
     
-    # ОБНОВЛЕННЫЙ АДРЕС (ROUTER)
+    # Прямая ссылка на модель через новый роутер
     api_url = "https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     
-    try:
-        # Отправляем запрос
-        response = requests.post(api_url, headers=headers, json={"inputs": f"Ответь кратко как автомеханик на русском: {user_text}"}, timeout=20)
-        response_data = response.json()
-        
-        # Если модель еще загружается
-        if isinstance(response_data, dict) and 'estimated_time' in response_data:
-            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="ИИ просыпается... Попробуй еще раз через 20 секунд.")
-            return
+    # Короткий и понятный запрос для ИИ
+    payload = {
+        "inputs": f"Ты — опытный автомеханик. Кратко ответь на русском, в чем может быть причина: {user_text}",
+        "parameters": {"max_new_tokens": 200, "return_full_text": False}
+    }
 
-        # Если всё успешно
-        if isinstance(response_data, list) and len(response_data) > 0:
-            result = response_data[0].get('generated_text', 'Не удалось получить текст.')
-            # Убираем сам промпт из ответа, если он там есть
-            result = result.replace(f"Ответь кратко как автомеханик на русском: {user_text}", "").strip()
+    try:
+        response = requests.post(api_url, headers=headers, json=payload, timeout=25)
+        
+        # Если в логах Render увидишь это число, поймем статус (200 - ок, 401 - плохой токен, 503 - ИИ спит)
+        print(f"Статус ответа ИИ: {response.status_code}") 
+        
+        response_data = response.json()
+
+        if response.status_code == 200 and isinstance(response_data, list):
+            result = response_data[0].get('generated_text', 'Не удалось разобрать ответ.')
             bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=result)
+        elif "estimated_time" in str(response_data):
+            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="⚠️ ИИ просыпается, подожди 30 секунд и нажми еще раз.")
         else:
-            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="ИИ не смог ответить. Попробуй позже.")
+            print(f"Ошибка от ИИ: {response_data}")
+            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="ИИ временно занят. Попробуй через минуту.")
             
     except Exception as e:
-        print(f"Ошибка: {e}")
-        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Сбой связи с ИИ.")
+        print(f"Ошибка в блоке запроса: {e}")
+        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Сбой связи. Проверь настройки токена.")
 
 if __name__ == "__main__":
     # Сначала запускаем сервер для Render
