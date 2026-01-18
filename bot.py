@@ -8,7 +8,7 @@ from telebot import types
 # --- ТВОИ ТОКЕНЫ (НЕ ЗАБУДЬ ВСТАВИТЬ СВОИ!) ---
 BOT_TOKEN = '8572493279:AAEe4mmkbc0vTxLp3St8yYkLHm8TyuJrD5M'
 HF_TOKEN = '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'
-WEB_APP_URL = 'https://armiy1706-ctrl.github.io/car-diagnostic-app/?v=1.1'
+WEB_APP_URL = 'https://armiy1706-ctrl.github.io/car-diagnostic-app/?v=999'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 API_URL = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
