@@ -89,8 +89,17 @@ def echo_all(message):
     print(f"Получено сообщение: {message.text}")
     bot.reply_to(message, f"Ты написал: {message.text}")
 
-if __name__ == "__main__":
-    Thread(target=run_dummy_server, daemon=True).start()
-    print("Бот запущен и готов к работе...")
-    bot.remove_webhook() 
-    bot.infinity_polling(timeout=10, long_polling_timeout=5)
+if __name__ == '__main__':
+    # Запускаем Flask в отдельном потоке
+    Thread(target=run_flask).start()
+    
+    print("✅ Бот запущен и готов к работе...")
+    
+    # Запуск бота с автоматическим пропуском старых обновлений
+    while True:
+        try:
+            bot.polling(none_stop=True, interval=0, timeout=20)
+        except Exception as e:
+            print(f"Ошибка во время работы: {e}")
+            import time
+            time.sleep(5) # Ждем 5 секунд перед перезапуском
