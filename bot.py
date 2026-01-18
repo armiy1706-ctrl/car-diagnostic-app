@@ -35,27 +35,31 @@ def web_app(message):
     user_text = message.web_app_data.data
     msg = bot.send_message(message.chat.id, f"🔍 Анализирую: {user_text}...")
     
-    api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+    # ОБНОВЛЕННЫЙ АДРЕС (ROUTER)
+    api_url = "https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     
     try:
-        response = requests.post(api_url, headers=headers, json={"inputs": user_text}, timeout=15)
+        # Отправляем запрос
+        response = requests.post(api_url, headers=headers, json={"inputs": f"Ответь кратко как автомеханик на русском: {user_text}"}, timeout=20)
         response_data = response.json()
         
-        # Печатаем ответ в логи Render для проверки
-        print(f"Ответ от ИИ: {response_data}")
-        
-        if isinstance(response_data, list) and 'generated_text' in response_data[0]:
-            result = response_data[0]['generated_text']
-        elif 'error' in response_data:
-            result = f"Ошибка ИИ: {response_data['error']}"
+        # Если модель еще загружается
+        if isinstance(response_data, dict) and 'estimated_time' in response_data:
+            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="ИИ просыпается... Попробуй еще раз через 20 секунд.")
+            return
+
+        # Если всё успешно
+        if isinstance(response_data, list) and len(response_data) > 0:
+            result = response_data[0].get('generated_text', 'Не удалось получить текст.')
+            # Убираем сам промпт из ответа, если он там есть
+            result = result.replace(f"Ответь кратко как автомеханик на русском: {user_text}", "").strip()
+            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=result)
         else:
-            result = "ИИ прислал странный ответ. Попробуй еще раз."
+            bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="ИИ не смог ответить. Попробуй позже.")
             
-        bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text=result)
-        
     except Exception as e:
-        print(f"Ошибка запроса: {e}")
+        print(f"Ошибка: {e}")
         bot.edit_message_text(chat_id=message.chat.id, message_id=msg.message_id, text="Сбой связи с ИИ.")
 
 if __name__ == "__main__":
