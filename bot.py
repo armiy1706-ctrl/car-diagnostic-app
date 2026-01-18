@@ -5,8 +5,9 @@ from threading import Thread
 from telebot import types
 
 # --- НАСТРОЙКИ ---
-BOT_TOKEN = '8572493279:AAEe4mmkbc0vTxLp3St8yYkLHm8TyuJrD5M'
-HF_TOKEN = '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'
+import os
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+HF_TOKEN = os.environ.get('HF_TOKEN')
 # Добавь ?v=1 в конце для сброса кэша
 WEB_APP_URL = 'https://armiy1706-ctrl.github.io/car-diagnostic-app/'
 
