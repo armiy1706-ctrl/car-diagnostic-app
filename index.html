@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
+        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; margin-top: 20px; }
+        input { width: 90%; padding: 10px; border-radius: 5px; border: none; }
+    </style>
 </head>
-<body style="background: #1a1a1a; color: white; text-align: center; padding-top: 50px;">
-    <h2>Проверка связи</h2>
-    <button id="testBtn" style="padding: 20px; background: #0088cc; color: white; border-radius: 10px;">
-        НАЖМИ МЕНЯ (ОТПРАВИТЬ ТЕСТ)
-    </button>
+<body>
+    <h3>ИИ Механик: Диагностика</h3>
+    <input type="text" id="user_input" placeholder="Например: Стук в двигателе">
+    <button onclick="sendData()">ОТПРАВИТЬ МАСТЕРУ</button>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
-
-        document.getElementById('testBtn').onclick = function() {
-            // Отправляем простое сообщение боту
-            tg.sendData("ТЕСТОВЫЙ ЗАПРОС");
-            // Кнопка должна поменять цвет, если сработала
-            this.style.background = "green";
-            this.innerText = "ОТПРАВЛЕНО!";
-            setTimeout(() => { tg.close(); }, 700);
-        };
+        function sendData() {
+            let val = document.getElementById('user_input').value;
+            if (val) {
+                tg.sendData(val); // Отправляем просто текст
+            }
+        }
     </script>
 </body>
 </html>
