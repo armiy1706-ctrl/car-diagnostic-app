@@ -21,46 +21,44 @@ def home():
 import sys # Добавь это в самый верх файла к импортам
 
 def ask_ai(text):
-    # НОВЫЙ АДРЕС (ROUTER), КОТОРЫЙ ТРЕБУЕТ HUGGING FACE
-    api_url = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3"
-    headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    
-    # Формируем запрос для Mistral
-    prompt = f"<s>[INST] Ты — опытный автомеханик. Отвечай только на русском языке. Клиент спрашивает: {text} [/INST]</s>"
-    
-    payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 500,
-            "temperature": 0.7,
-            "return_full_text": False
-        }
+    # Самый современный адрес роутера (v1 chat)
+    api_url = "https://router.huggingface.co/hf-inference/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {HF_TOKEN}",
+        "Content-Type": "application/json"
     }
     
-    print(f">>> ИИ: Запрос отправлен через новый Router...", flush=True)
+    # Новый формат данных (сообщения ролями)
+    payload = {
+        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "messages": [
+            {"role": "system", "content": "Ты — профессиональный автомеханик. Отвечай кратко и только на русском языке."},
+            {"role": "user", "content": text}
+        ],
+        "max_tokens": 500,
+        "stream": False
+    }
+    
+    print(f">>> ИИ: Отправка через Chat API...", flush=True)
     
     try:
         res = requests.post(api_url, headers=headers, json=payload, timeout=30)
-        print(f">>> ИИ: Код ответа = {res.status_code}", flush=True)
+        print(f">>> ИИ: Статус = {res.status_code}", flush=True)
 
         if res.status_code == 200:
             result = res.json()
-            if isinstance(result, list) and len(result) > 0:
-                # Убираем возможные остатки промпта из ответа
-                answer = result[0].get('generated_text', '').strip()
-                return answer
-            return "⚠️ ИИ прислал пустой ответ."
+            # В новом формате ответ лежит здесь:
+            return result['choices'][0]['message']['content'].strip()
             
         elif res.status_code == 503:
-            return "⏳ Станция прогревается (модель грузится). Подождите 30 секунд и нажмите еще раз."
-            
+            return "⏳ Мастер подготавливает бокс (модель грузится). Подожди 30 секунд и нажми еще раз."
         else:
-            print(f">>> Подробности ошибки: {res.text}", flush=True)
-            return f"⚠️ Ошибка сервера ИИ (Код: {res.status_code})"
+            print(f">>> Ошибка: {res.text}", flush=True)
+            return f"⚠️ Ошибка связи (Код: {res.status_code})"
 
     except Exception as e:
         print(f">>> Критическая ошибка: {e}", flush=True)
-        return "❌ Не удалось достучаться до мастера."
+        return "❌ Не удалось связаться с мастером."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
