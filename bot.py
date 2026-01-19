@@ -21,11 +21,11 @@ def home():
 import sys # Добавь это в самый верх файла к импортам
 
 def ask_ai(text):
-    # Используем Mistral — она очень стабильна и не требует подтверждения лицензии, как Llama
-    api_url = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
+    # НОВЫЙ АДРЕС (ROUTER), КОТОРЫЙ ТРЕБУЕТ HUGGING FACE
+    api_url = "https://router.huggingface.co/hf-inference/models/mistralai/Mistral-7B-Instruct-v0.3"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     
-    # Формируем запрос так, чтобы ИИ понимал свою роль
+    # Формируем запрос для Mistral
     prompt = f"<s>[INST] Ты — опытный автомеханик. Отвечай только на русском языке. Клиент спрашивает: {text} [/INST]</s>"
     
     payload = {
@@ -37,7 +37,7 @@ def ask_ai(text):
         }
     }
     
-    print(f">>> ИИ: Запрос к Mistral отправлен...", flush=True)
+    print(f">>> ИИ: Запрос отправлен через новый Router...", flush=True)
     
     try:
         res = requests.post(api_url, headers=headers, json=payload, timeout=30)
@@ -46,23 +46,21 @@ def ask_ai(text):
         if res.status_code == 200:
             result = res.json()
             if isinstance(result, list) and len(result) > 0:
-                return result[0].get('generated_text', 'Пустой ответ.').strip()
-            return "⚠️ ИИ прислал пустой ответ. Попробуйте еще раз."
+                # Убираем возможные остатки промпта из ответа
+                answer = result[0].get('generated_text', '').strip()
+                return answer
+            return "⚠️ ИИ прислал пустой ответ."
             
         elif res.status_code == 503:
-            return "⏳ Модель загружается на сервере. Подождите 30 секунд и нажмите кнопку снова."
-            
-        elif res.status_code == 401:
-            return "❌ Ошибка токена! Проверьте HF_TOKEN в настройках Render."
+            return "⏳ Станция прогревается (модель грузится). Подождите 30 секунд и нажмите еще раз."
             
         else:
-            # Если опять 410 или любая другая ошибка, выведем текст ошибки в логи
             print(f">>> Подробности ошибки: {res.text}", flush=True)
-            return f"⚠️ Ошибка сервера ИИ (Код: {res.status_code}). Попробуем позже."
+            return f"⚠️ Ошибка сервера ИИ (Код: {res.status_code})"
 
     except Exception as e:
-        print(f">>> ИИ: Критическая ошибка: {e}", flush=True)
-        return "❌ Не удалось достучаться до мастера-ИИ."
+        print(f">>> Критическая ошибка: {e}", flush=True)
+        return "❌ Не удалось достучаться до мастера."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
