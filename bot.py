@@ -21,21 +21,37 @@ def home():
 def ask_ai(text):
     api_url = "https://router.huggingface.co/v1/chat/completions"
     headers = {"Authorization": f"Bearer {HF_TOKEN}", "Content-Type": "application/json"}
+    
     payload = {
         "model": "google/gemma-2-2b-it",
         "messages": [
-            {"role": "system", "content": "Ты опытный автомеханик с DRIVE2. Отвечай кратко, понятно и по-человечески на русском языке."},
+            {"role": "system", "content": "Ты опытный автомеханик с DRIVE2. Отвечай кратко, понятно и только на русском языке."},
             {"role": "user", "content": text}
         ],
         "max_tokens": 400
     }
-    try:
-        res = requests.post(api_url, headers=headers, json=payload, timeout=20)
-        if res.status_code == 200:
-            return res.json()['choices'][0]['message']['content'].strip()
-        return "Не удалось получить ответ от ИИ. Посмотри поиск ниже."
-    except:
-        return "Ошибка связи с мастером."
+
+    # Пытаемся достучаться до ИИ 3 раза
+    for attempt in range(3):
+        try:
+            print(f">>> Попытка {attempt + 1} связаться с ИИ...")
+            res = requests.post(api_url, headers=headers, json=payload, timeout=25)
+            
+            if res.status_code == 200:
+                return res.json()['choices'][0]['message']['content'].strip()
+            
+            # Если модель грузится (503), ждем дольше
+            if res.status_code == 503:
+                print(">>> ИИ прогревается, ждем 10 секунд...")
+                time.sleep(10)
+                continue
+                
+            print(f">>> Ошибка сервера {res.status_code}: {res.text}")
+        except Exception as e:
+            print(f">>> Ошибка при попытке {attempt + 1}: {e}")
+            time.sleep(2) # Небольшая пауза перед повтором
+            
+    return "🛠 Мастер пока занят в боксе. Попробуй нажать кнопку еще раз через полминуты — я точно отвечу!"
 
 @bot.message_handler(content_types=['web_app_data'])
 def get_data(message):
