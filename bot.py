@@ -11,7 +11,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 HF_TOKEN = os.environ.get('HF_TOKEN')
 
 # СЮДА ТЫ ВСТАВИШЬ ССЫЛКУ ПОЗЖЕ (например "https://login.github.io/repo/")
-WEB_APP_URL = "" 
+WEB_APP_URL = "https://armiy1706-ctrl.github.io/car-diagnostic-app/"
 
 # --- 2. ПРОВЕРКА ПРИ ЗАПУСКЕ ---
 if not BOT_TOKEN or not HF_TOKEN:
