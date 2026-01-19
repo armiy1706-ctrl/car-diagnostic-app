@@ -1,27 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автомеханик AI</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; background: #1a1a1a; color: white; text-align: center; padding: 20px; }
-        button { background: #0088cc; color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; margin-top: 20px; }
-        input { width: 90%; padding: 10px; border-radius: 5px; border: none; }
+        body { font-family: sans-serif; background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        textarea { width: 90%; height: 150px; border-radius: 10px; padding: 10px; border: 1px solid #ccc; font-size: 16px; margin-bottom: 20px; }
+        button { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; padding: 15px 30px; border-radius: 10px; font-size: 16px; cursor: pointer; width: 90%; }
     </style>
 </head>
 <body>
-    <h3>ИИ Механик: Диагностика</h3>
-    <input type="text" id="user_input" placeholder="Например: Стук в двигателе">
-    <button onclick="sendData()">ОТПРАВИТЬ МАСТЕРУ</button>
+    <h3>Опиши проблему с авто:</h3>
+    <textarea id="problem" placeholder="Например: Стучит подвеска справа при повороте..."></textarea>
+    <button onclick="sendData()">🛠 Отправить мастеру</button>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+
         function sendData() {
-            let val = document.getElementById('user_input').value;
-            if (val) {
-                tg.sendData(val); // Отправляем просто текст
+            let text = document.getElementById("problem").value;
+            if (text.trim() === "") {
+                alert("Пожалуйста, опиши проблему!");
+                return;
             }
+            tg.sendData(text);
         }
     </script>
 </body>
