@@ -21,25 +21,23 @@ def home():
 import sys # Добавь это в самый верх файла к импортам
 
 def ask_ai(text):
-    # Самый современный адрес роутера (v1 chat)
-    api_url = "https://router.huggingface.co/hf-inference/v1/chat/completions"
+    # ВНИМАНИЕ: Изменили адрес (убрали /hf-inference)
+    api_url = "https://router.huggingface.co/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {HF_TOKEN}",
         "Content-Type": "application/json"
     }
     
-    # Новый формат данных (сообщения ролями)
+    # Используем модель google/gemma-2-2b-it — она маленькая, быстрая и всегда доступна
     payload = {
-        "model": "mistralai/Mistral-7B-Instruct-v0.3",
+        "model": "google/gemma-2-2b-it",
         "messages": [
-            {"role": "system", "content": "Ты — профессиональный автомеханик. Отвечай кратко и только на русском языке."},
-            {"role": "user", "content": text}
+            {"role": "user", "content": f"Ты автомеханик. Кратко ответь на русском: {text}"}
         ],
-        "max_tokens": 500,
-        "stream": False
+        "max_tokens": 300
     }
     
-    print(f">>> ИИ: Отправка через Chat API...", flush=True)
+    print(f">>> ИИ: Пробую новый адрес роутера...", flush=True)
     
     try:
         res = requests.post(api_url, headers=headers, json=payload, timeout=30)
@@ -47,18 +45,27 @@ def ask_ai(text):
 
         if res.status_code == 200:
             result = res.json()
-            # В новом формате ответ лежит здесь:
             return result['choices'][0]['message']['content'].strip()
             
+        elif res.status_code == 404:
+            # Если 404, попробуем запасной прямой путь
+            print(">>> ИИ: 404 на роутере, пробую запасной путь...", flush=True)
+            fallback_url = "https://api-inference.huggingface.co/models/google/gemma-2-2b-it"
+            res_fb = requests.post(fallback_url, headers=headers, json={"inputs": text}, timeout=30)
+            if res_fb.status_code == 200:
+                return res_fb.json()[0]['generated_text']
+            return f"⚠️ Ошибка 404 (Путь не найден). Проверьте настройки API."
+            
         elif res.status_code == 503:
-            return "⏳ Мастер подготавливает бокс (модель грузится). Подожди 30 секунд и нажми еще раз."
+            return "⏳ Мастер занят, модель прогревается. Попробуйте через 30 секунд."
+            
         else:
-            print(f">>> Ошибка: {res.text}", flush=True)
-            return f"⚠️ Ошибка связи (Код: {res.status_code})"
+            print(f">>> ИИ Ошибка: {res.text}", flush=True)
+            return f"⚠️ Ошибка ИИ (Код: {res.status_code})"
 
     except Exception as e:
         print(f">>> Критическая ошибка: {e}", flush=True)
-        return "❌ Не удалось связаться с мастером."
+        return "❌ Ошибка связи с мастером."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
