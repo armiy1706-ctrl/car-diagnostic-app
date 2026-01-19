@@ -21,39 +21,45 @@ def home():
 import sys # Добавь это в самый верх файла к импортам
 
 def ask_ai(text):
-    # Используем классический адрес (он иногда стабильнее для бесплатных аккаунтов)
-    api_url = "https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct"
+    # Используем более новую версию 3.1 - она сейчас основная и стабильная
+    api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+    
+    # Максимально простой и понятный формат для модели
     payload = {
-        "inputs": f"<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\nТы автомеханик. Ответь кратко на русском: {text}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
-        "parameters": {"max_new_tokens": 300}
+        "inputs": f"Ты — автомеханик. Дай краткий совет на русском языке по этой проблеме: {text}",
+        "parameters": {
+            "max_new_tokens": 300,
+            "return_full_text": False
+        }
     }
     
-    # Принудительно выводим в логи начало процесса
-    print(">>> ИИ: Начинаю запрос к Hugging Face...", flush=True)
+    print(f">>> ИИ: Запрос отправлен на Llama 3.1...", flush=True)
     
     try:
         res = requests.post(api_url, headers=headers, json=payload, timeout=30)
-        
-        # Печатаем всё, что узнали
-        print(f">>> ИИ: Статус код = {res.status_code}", flush=True)
-        print(f">>> ИИ: Ответ сервера = {res.text[:100]}", flush=True) 
+        print(f">>> ИИ: Код ответа = {res.status_code}", flush=True)
 
         if res.status_code == 200:
             result = res.json()
-            # У Llama 3 ответ приходит списком
-            if isinstance(result, list):
-                return result[0]['generated_text'].split("assistant<|end_header_id|>\n\n")[-1].strip()
-            return result.get('generated_text', 'Ошибка формата')
+            # Проверяем формат ответа
+            if isinstance(result, list) and len(result) > 0:
+                return result[0].get('generated_text', 'Пустой ответ от мастера.').strip()
+            return "⚠️ Не удалось прочитать ответ ИИ."
             
         elif res.status_code == 503:
-            return "⏳ Модель загружается на сервере ИИ. Повтори через 30 секунд."
+            return "⏳ Станция перегружена (модель грузится). Подожди 20-30 секунд и нажми кнопку еще раз."
+            
+        elif res.status_code == 410:
+            return "❌ Модель устарела. Требуется обновление ссылки в коде."
+            
         else:
-            return f"❌ Сервер ИИ ответил ошибкой {res.status_code}"
+            print(f">>> Ошибка сервера ИИ: {res.text}", flush=True)
+            return f"⚠️ Сервер ИИ ответил ошибкой {res.status_code}"
 
     except Exception as e:
-        print(f">>> ИИ: Ошибка внутри try: {e}", flush=True)
-        return "❌ Не удалось достучаться до ИИ."
+        print(f">>> ИИ: Критическая ошибка: {e}", flush=True)
+        return "❌ Не удалось связаться с мастером-ИИ."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
