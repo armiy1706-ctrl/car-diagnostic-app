@@ -21,20 +21,23 @@ def home():
 import sys # Добавь это в самый верх файла к импортам
 
 def ask_ai(text):
-    # Используем более новую версию 3.1 - она сейчас основная и стабильная
-    api_url = "https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct"
+    # Используем Mistral — она очень стабильна и не требует подтверждения лицензии, как Llama
+    api_url = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
     
-    # Максимально простой и понятный формат для модели
+    # Формируем запрос так, чтобы ИИ понимал свою роль
+    prompt = f"<s>[INST] Ты — опытный автомеханик. Отвечай только на русском языке. Клиент спрашивает: {text} [/INST]</s>"
+    
     payload = {
-        "inputs": f"Ты — автомеханик. Дай краткий совет на русском языке по этой проблеме: {text}",
+        "inputs": prompt,
         "parameters": {
-            "max_new_tokens": 300,
+            "max_new_tokens": 500,
+            "temperature": 0.7,
             "return_full_text": False
         }
     }
     
-    print(f">>> ИИ: Запрос отправлен на Llama 3.1...", flush=True)
+    print(f">>> ИИ: Запрос к Mistral отправлен...", flush=True)
     
     try:
         res = requests.post(api_url, headers=headers, json=payload, timeout=30)
@@ -42,24 +45,24 @@ def ask_ai(text):
 
         if res.status_code == 200:
             result = res.json()
-            # Проверяем формат ответа
             if isinstance(result, list) and len(result) > 0:
-                return result[0].get('generated_text', 'Пустой ответ от мастера.').strip()
-            return "⚠️ Не удалось прочитать ответ ИИ."
+                return result[0].get('generated_text', 'Пустой ответ.').strip()
+            return "⚠️ ИИ прислал пустой ответ. Попробуйте еще раз."
             
         elif res.status_code == 503:
-            return "⏳ Станция перегружена (модель грузится). Подожди 20-30 секунд и нажми кнопку еще раз."
+            return "⏳ Модель загружается на сервере. Подождите 30 секунд и нажмите кнопку снова."
             
-        elif res.status_code == 410:
-            return "❌ Модель устарела. Требуется обновление ссылки в коде."
+        elif res.status_code == 401:
+            return "❌ Ошибка токена! Проверьте HF_TOKEN в настройках Render."
             
         else:
-            print(f">>> Ошибка сервера ИИ: {res.text}", flush=True)
-            return f"⚠️ Сервер ИИ ответил ошибкой {res.status_code}"
+            # Если опять 410 или любая другая ошибка, выведем текст ошибки в логи
+            print(f">>> Подробности ошибки: {res.text}", flush=True)
+            return f"⚠️ Ошибка сервера ИИ (Код: {res.status_code}). Попробуем позже."
 
     except Exception as e:
         print(f">>> ИИ: Критическая ошибка: {e}", flush=True)
-        return "❌ Не удалось связаться с мастером-ИИ."
+        return "❌ Не удалось достучаться до мастера-ИИ."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
