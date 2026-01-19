@@ -9,7 +9,7 @@ from urllib.parse import quote
 # Настройки
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 HF_TOKEN = os.environ.get('HF_TOKEN')
-WEB_APP_URL = "ТВОЯ_ССЫЛКА_GITHUB_PAGES" 
+WEB_APP_URL = "https://armiy1706-ctrl.github.io/car-diagnostic-app/"
 
 bot = telebot.TeleBot(BOT_TOKEN)
 app = Flask('')
