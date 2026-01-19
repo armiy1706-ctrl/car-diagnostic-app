@@ -19,14 +19,41 @@ def home():
 
 # Функция для ИИ
 def ask_ai(text):
+    # Прямой адрес модели Llama 3
     api_url = "https://router.huggingface.co/hf-inference/models/meta-llama/Meta-Llama-3-8B-Instruct"
     headers = {"Authorization": f"Bearer {HF_TOKEN}"}
-    payload = {"inputs": f"Ты автомеханик. Кратко ответь: {text}", "parameters": {"max_new_tokens": 200}}
+    payload = {
+        "inputs": f"Ты — профессиональный автомеханик. Клиент говорит: {text}. Дай краткий совет на русском языке.",
+        "parameters": {"max_new_tokens": 250, "return_full_text": False}
+    }
+    
     try:
-        res = requests.post(api_url, headers=headers, json=payload, timeout=20)
-        return res.json()[0]['generated_text']
-    except:
-        return "Ошибка ИИ"
+        print(f"📡 Отправляю запрос к ИИ с токеном: {HF_TOKEN[:5]}...") # Проверка в логах
+        res = requests.post(api_url, headers=headers, json=payload, timeout=25)
+        
+        # Печатаем статус ответа в логи Render
+        print(f"Статус ответа ИИ: {res.status_code}")
+        
+        result = res.json()
+        
+        # Если модель еще загружается (ошибка 503)
+        if res.status_code == 503:
+            return "⏳ Мастер еще готовит инструменты (модель загружается). Попробуйте через 20 секунд."
+            
+        # Если токен неверный (ошибка 401)
+        if res.status_code == 401:
+            return "❌ Ошибка авторизации. Проверьте HF_TOKEN в настройках Render."
+
+        # Если всё успешно
+        if isinstance(result, list) and 'generated_text' in result[0]:
+            return result[0]['generated_text'].strip()
+        else:
+            print(f"Неожиданный формат ответа: {result}")
+            return "⚠️ ИИ прислал странный ответ. Попробуйте еще раз."
+
+    except Exception as e:
+        print(f"❌ Полная ошибка в блоке ask_ai: {e}")
+        return "❌ Сбой связи с сервером ИИ."
 
 # ОТЛАДКА: Бот будет писать в логи любое сообщение
 @bot.message_handler(func=lambda message: True)
